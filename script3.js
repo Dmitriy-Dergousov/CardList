@@ -1,8 +1,3 @@
-// const tasks = [
-//  {title: "Learn JS", done: false},
-//  {title: "Do homework", done: true}
-// ];
-
 const STORAGE_KEY = 'tasklist_tasks';
 
 const STATUSES = {
@@ -23,12 +18,17 @@ function loadTasks() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         
-        return [
-              { id: newId(), title: "Learn JS", done: false },
-             { id: newId(), title: "Do homework", done: true }
-        ];
-      
-        
+        if(!raw){
+            return [
+                { id: newId(), title: "Learn JS", done: false },
+                { id: newId(), title: "Do homework", done: true }
+            ]
+        }
+
+        const data = JSON.parse(raw);
+            if(!Array.isArray(data)) return [];
+            return data;
+    
     } catch {
         return [];
     }
@@ -54,13 +54,6 @@ function saveTasks(){
 function tasksInStatus(status){
     return tasks.filter((t) => t.status === status);
 }
-
-let tasks = loadTasks();
-
-const titleInp = document.getElementById('titleInput');
-const addBtn = document.getElementById('addTask');
-const boardEl = document.getElementById('board');
-
 
 // function renderTasks(){
 //     boardEl.innerHTML = "";
@@ -234,7 +227,19 @@ function addEvents(){
     })
 }
 
-addBtn.addEventListener('click', () => {
+
+
+
+    let tasks = loadTasks();
+
+    const titleInp = document.getElementById('titleInput');
+    const addBtn = document.getElementById('addTask');
+    const boardEl = document.getElementById('board');
+
+
+
+
+    addBtn.addEventListener('click', () => {
     const title = titleInp.value.trim();
    
     if(!title){
@@ -263,5 +268,84 @@ addBtn.addEventListener('click', () => {
         }
     })
     
+
     renderTasks();
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // let age = 18;
+
+    // let result;
+
+    // if (age >= 18){
+    //     result = 'Взрослый';
+    // }else{
+    //     result = 'Ребенок';
+    // }
+
+    // console.log(result);
+
+
+
+    // let age = 18;
+
+    // let result = age >= 18 ? "Взрослый" : "Ребенок";
+
+    // console.log(result);
+
+
+
+    //  function getDiscount(price){
+    //    return price > 1000 ? price * 0.9 : price;
+    // }
+
+    // let result1 = getDiscount(1500);
+    // let result2 = getDiscount(500);
+
+    // console.log(result1);
+    // console.log(result2);
+
+  
+    // let arr = [1,2,3];
+    // let str = 'Hello';
+    // let obj = {a: 1};
+
+    // console.log(Array.isArray(arr));
+
+    // console.log(Array.isArray(str));
+
+    // console.log(Array.isArray(obj));
