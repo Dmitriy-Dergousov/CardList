@@ -1,9 +1,9 @@
 const STORAGE_KEY = 'tasklist_tasks';
 
 const STATUSES = {
-    todo: {label: 'К выполнению', bage: 'bg-secondary'},
-    progress: {label: 'В процессе', bage: 'bg-warning text-dark'},
-    done: {label: 'Готово', bage: 'bg-success'},
+    todo: {label: 'К выполнению', badge: 'bg-secondary'},
+    progress: {label: 'В процессе', badge: 'bg-warning text-dark'},
+    done: {label: 'Готово', badge: 'bg-success'},
 };
 
 const STATUS_ORDER = ['todo', 'progress', 'done'];
@@ -55,70 +55,6 @@ function tasksInStatus(status){
     return tasks.filter((t) => t.status === status);
 }
 
-// function renderTasks(){
-//     boardEl.innerHTML = "";
-
-//     if(tasks.length === 0){
-//         const noTasks = document.createElement('div');
-//         noTasks.className = "col-12 text-center text-muted my-5";
-//         noTasks.innerHTML = "<h4>No tasks</h4>"
-//         boardEl.appendChild(noTasks);
-//         return;
-//     }
-
-//     tasks.forEach((task, index) => {
-//         const col = document.createElement('div');
-//         col.className = "col-md-4 mb-3";
-
-//         // const status = task.done ? "Completed" : "In progress";
-//         // const badge = task.done ? "bg-success" : "bg-warning";
-
-//         let status;
-//         let badge;
-
-        
-//             if (task.done) {
-//                 status = "Completed";
-//                 badge = "bg-success";
-//             } else {
-//                 status = "In progress";
-//                 badge = "bg-warning";
-//             }
-            
-//         col.innerHTML = `
-//             <div class="card shadow-sm">
-//                 <div class="card-body">
-                   
-//                     <div class="form-check mb-2">
-//                         <input 
-//                             class="form-check-input"
-//                             type="checkbox"
-//                             ${task.done ? "checked" : ""}
-//                             data-index=${index}
-//                         >
-//                         <label class="form-check-label">
-//                         Mark as done
-//                         </label>
-//                     </div>
-
-//                     <h5 class="card-title editable" data-index=${index}>${task.title}</h5>
-//                     <span class="badge ${badge}">${status}</span>
-
-//                     <div class="mt-3"> 
-//                         <button class="btn btn-danger btn-sm delete-btn" data-index="${index}">
-//                             Delete
-//                         </button>
-//                     </div>
-//                 </div>
-//             </div>
-//         `;
-
-//         boardEl.appendChild(col);
-//     })
-
-//     addEvents();
-//     saveTasks();
-// }
 
 function renderTasks(){
     boardEl.innerHTML = '';
@@ -132,11 +68,31 @@ function renderTasks(){
         const list = tasksInStatus(status);
         col.innerHTML = `
             <div class="card border-0 shadow-sm board-column h-100 ">
-                <div class="card-header">
-                
+                <div class="card-header fw-semibold d-flex justify-content-between aling-items-center">
+                    <span>${meta.label}</span>
+                    <span class="badge ${meta.badge}">${list.length}</span>
                 </div>
+
+                <div class="card-body pt-2 drop-zone" data-status="${status}"></div>
             </div>
+            
         `;
+
+        boardEl.appendChild(col);
+        const zone = col.querySelector('.drop-zone');
+
+        if (list.length == 0){
+            const empty = document.createElement('div');
+            empty.className = 'text-muted small text-center py-4';
+            empty.textContent = 'Перетащите сюда задачу';
+            zone.appendChild(empty);
+        }
+
+        list.forEach((task) =>{
+            zone.appendChild(createTaskCard(task));
+        })
+
+
     })
 }
 
@@ -227,6 +183,22 @@ function addEvents(){
     })
 }
 
+function createTaskCard(task){
+    const meta = STATUSES[task.status];
+    const wrap = document.createElement('div');
+    wrap.className = 'card mb-2 task-card border';
+    wrap.draggable = true;
+    wrap.dataset.taskId = task.id;
+    wrap.innerHTML =`
+        <div class="card-body py-2 px-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h6 class="crd-title mb-1">${task.title}</h6>
+            </div>
+            <span class="badge ${meta.badge}">${meta.label}</span>
+        </div>
+    `;
+    return wrap;
+}
 
 
 

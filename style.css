@@ -1,3 +1,6 @@
 .board-column{
     min-height: 420px;
 }
+.drop-zone{
+    min-height: 320px;
+}
