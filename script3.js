@@ -222,8 +222,14 @@ function bindDropZone(zone, status){
     });
 
     zone.addEventListener('drop', (e)=>{
-        
-    });
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const id = e.dataTransfer.getData('txt/plain');
+        if(!id) return;
+
+        moveTaskToColumn(id, status);
+        renderTasks();
+    })
 }
 
 function addCardEvents(){
@@ -232,11 +238,22 @@ function addCardEvents(){
 
         card.addEventListener('dragstart',(e)=>{
             draggedTaskId = id; // запоминаем что тянем
-            e.dataTransfer.setData("text/plain", id)
+            e.dataTransfer.setData("text/plain", id);
+            e.dataTransfer.effectAllowed = 'move';
+            card.classList.add('dragging');
         })
+
+        card.addEventListener('dragend', ()=>{
+            draggedTaskId = null;
+            card.classList.remove('dragging');
+            document.querySelectorAll('.drop-zone').forEach((z) => z.classList.remove('drag-over'));
+        });
     });
 }
 
+function moveTaskToColumn(taskId, newStatus){
+
+}
 
 
 let tasks = loadTasks();
@@ -348,11 +365,11 @@ titleInp.addEventListener('keydown', (event) => {
 // console.log(result);
 
 
-let arr = [1, 2, 3];
-let str = "hello";
-let obj = { a: 1 };
+// let arr = [1, 2, 3];
+// let str = "hello";
+// let obj = { a: 1 };
 
-console.log(Array.isArray(arr));
-console.log(Array.isArray(str));
-console.log(Array.isArray(obj));
+// console.log(Array.isArray(arr));
+// console.log(Array.isArray(str));
+// console.log(Array.isArray(obj));
 

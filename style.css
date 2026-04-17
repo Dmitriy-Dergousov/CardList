@@ -10,3 +10,10 @@
     outline-offset: -4px;
     border-radius: 0.375rem;
 }
+.task-card{
+    cursor: grab;
+}
+
+.task-card.dragging{
+    opacity: 0.55;
+}
