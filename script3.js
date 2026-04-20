@@ -22,7 +22,14 @@ function loadTasks() {
         if (!raw) {
             return [
                 { id: newId(), title: 'Learn JS', status: 'todo' },
-                { id: newId(), title: 'Do Homework', status: 'done' }
+                { id: newId(), title: 'Do Homework', status: 'done' },
+                { id: newId(), title: 'Task3', status: 'done' },
+                { id: newId(), title: 'Task4', status: 'progress' },
+                { id: newId(), title: 'Task5', status: 'progress' },
+                { id: newId(), title: 'Task6', status: 'todo' },
+                { id: newId(), title: 'Task7', status: 'done' },
+                { id: newId(), title: 'Task8', status: 'todo' },
+                { id: newId(), title: 'Task9', status: 'done' }
             ]
         }
 
@@ -99,96 +106,8 @@ function renderTasks() {
     });
 
     addCardEvents();
+    saveTasks();
 }
-
-// function addEvents() {
-//     const checkboxes = document.querySelectorAll('.form-check-input');
-
-//     checkboxes.forEach(cb => {
-//         cb.addEventListener('change', () => {
-//             const index = cb.dataset.index;
-//             tasks[index].done = cb.checked;
-//             renderTasks();
-//         });
-//     });
-
-
-//     const deleteBtns = document.querySelectorAll('.delete-btn');
-//     deleteBtns.forEach(btn => {
-//         btn.addEventListener('click', () => {
-//             const index = Number(btn.dataset.index);
-//             tasks.splice(index, 1); //удали начиная с позиции index в кол-ве "1" элемент
-//             renderTasks();
-//         });
-//     });
-
-
-//     //Редактирование по клику на заголовок
-//     const editableEls = document.querySelectorAll('.editable');
-//     editableEls.forEach(el => {
-//         el.addEventListener('click', () => {
-//             const index = Number(el.dataset.index);
-//             const task = tasks[index];
-
-//             //контейнер
-//             const wrapper = document.createElement('div');
-//             wrapper.className = 'd-flex gap-2';
-
-//             //input
-//             const input = document.createElement('input');
-//             input.type = 'text';
-//             input.value = task.title;
-//             input.className = 'form-control';
-
-//             //Кнопка Save
-//             const saveBtn = document.createElement('button');
-//             saveBtn.className = 'btn btn-success btn-sm';
-//             saveBtn.textContent = 'Save';
-
-//             //Кнопка Cancel
-//             const cancelBtn = document.createElement('button');
-//             cancelBtn.className = 'btn btn-secondary btn-sm';
-//             cancelBtn.textContent = 'Cancel';
-
-//             //собираем
-//             wrapper.appendChild(input);
-//             wrapper.appendChild(saveBtn);
-//             wrapper.appendChild(cancelBtn);
-
-//             el.replaceWith(wrapper);
-//             input.focus();
-
-//             function save() {
-//                 task.title = input.value.trim() || task.title;
-//                 renderTasks();
-//             }
-
-//             function cancel() {
-//                 renderTasks();
-//             }
-
-//             saveBtn.addEventListener('click', save);
-//             cancelBtn.addEventListener('click', cancel);
-
-//             //СОхраняем по нажатию на enter
-//             input.addEventListener('keydown', (event) => {
-//                 if (event.key === 'Enter') {
-//                     save();
-//                 }
-//             });
-
-
-//             function handleClickOutside(e) {
-//                 if (!wrapper.contains(e.target)) {
-//                     cancel();
-//                     document.removeEventListener('mousedown', handleClickOutside);
-//                 }
-//             }
-
-//             document.addEventListener('mousedown', handleClickOutside);
-//         })
-//     })
-// }
 
 function createTaskCard(task) {
     const meta = STATUSES[task.status];
@@ -218,13 +137,14 @@ function bindDropZone(zone, status){
 
     //уход из зон
     zone.addEventListener('dragleave', (e)=>{
-        if (!zone.contains(e.relatedTarged)) zone.classList.remove('drag-over');
+        if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
     });
 
     zone.addEventListener('drop', (e)=>{
         e.preventDefault();
+        console.log('drop');
         zone.classList.remove('drag-over');
-        const id = e.dataTransfer.getData('txt/plain');
+        const id = e.dataTransfer.getData('text/plain');
         if(!id) return;
 
         moveTaskToColumn(id, status);
@@ -248,11 +168,35 @@ function addCardEvents(){
             card.classList.remove('dragging');
             document.querySelectorAll('.drop-zone').forEach((z) => z.classList.remove('drag-over'));
         });
+    })
+
+    document.querySelectorAll('.delete-btn').forEach((btn) =>{
+        btn.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            const taskId = btn.dataset.taskId;
+            tasks = tasks.filter((t) => t.id !== taskId);
+            renderTasks();
+        })
     });
 }
 
 function moveTaskToColumn(taskId, newStatus){
+    const idx = tasks.findIndex((t) => t.id === taskId);
+    if (idx === -1) return;
 
+    const[task] = tasks.splice(idx, 1);
+    task.status = newStatus;
+
+    const orderRank = (s) => STATUS_ORDER.indexOf(s);
+    const r = orderRank(newStatus);
+    let insertedAt = tasks.length;
+    for (let i = tasks.length - 1; i >= 0; i--){
+        if (tasks[i].status === newStatus){
+            insertedAt = i+1;
+            break;
+        }
+    }
+    tasks.splice(insertedAt,0,task);
 }
 
 
@@ -273,17 +217,16 @@ addBtn.addEventListener('click', () => {
     const title = titleInp.value.trim();
 
     if (!title) {
-        alert("Enter task text!");
+        alert("Используйте текст!");
         return;
     }
 
     if (!isNaN(title)) {
-        alert(`Use text`);
+        alert(`Используйте текст`);
         return;
     }
 
-    const task = { title: title, done: false };
-    tasks.push(task);
+    tasks.push({ id: newId(), title, status: 'todo' });
 
     renderTasks();
 
