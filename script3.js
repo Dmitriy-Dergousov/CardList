@@ -21,15 +21,15 @@ function loadTasks() {
 
         if (!raw) {
             return [
-                { id: newId(), title: 'Learn JS', status: 'todo' },
-                { id: newId(), title: 'Do Homework', status: 'done' },
-                { id: newId(), title: 'Task3', status: 'done' },
-                { id: newId(), title: 'Task4', status: 'progress' },
-                { id: newId(), title: 'Task5', status: 'progress' },
-                { id: newId(), title: 'Task6', status: 'todo' },
-                { id: newId(), title: 'Task7', status: 'done' },
-                { id: newId(), title: 'Task8', status: 'todo' },
-                { id: newId(), title: 'Task9', status: 'done' }
+                { id: newId(), title: 'Learn JS', status: 'todo', dueDate: null },
+                { id: newId(), title: 'Do Homework', status: 'done', dueDate: null },
+                { id: newId(), title: 'Task3', status: 'done', dueDate: null },
+                { id: newId(), title: 'Task4', status: 'progress', dueDate: null },
+                { id: newId(), title: 'Task5', status: 'progress', dueDate: null },
+                { id: newId(), title: 'Task6', status: 'todo', dueDate: null },
+                { id: newId(), title: 'Task7', status: 'done', dueDate: null },
+                { id: newId(), title: 'Task8', status: 'todo', dueDate: null },
+                { id: newId(), title: 'Task9', status: 'done', dueDate: null }
             ]
         }
 
@@ -109,18 +109,63 @@ function renderTasks() {
     saveTasks();
 }
 
+function todayStrLocal(){
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, '0');
+    const d = String(t.getDate() + 1).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+function isOverdue(dueDate, status){
+    if (!dueDate || status === 'done') return false;
+    return dueDate < todayStrLocal();
+}
+
+function formatDueDateLabel(yyyyMmDd){
+    const d = new Date(yyyyMmDd + "T12:00:00")
+    if(isNaN(d.getTime())) return yyyyMmDd;
+    return d.toLocaleDateString('ru-Ru', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    })
+}
+
 function createTaskCard(task) {
     const meta = STATUSES[task.status];
     const wrap = document.createElement('div');
     wrap.className = 'card mb-2 task-card border';
     wrap.draggable = true;
     wrap.dataset.taskId = task.id;
+
+    const dueLine = task.dueDate
+        ? (() =>{
+            const past = isOverdue(task.dueDate, task.status);
+            const cls = past 
+                ? 'text-danger' 
+                : 'text-muted';
+
+            const overdueLabel = past
+                ? '<span class="text-uppercase" style="font-size:0.7rem">(просрочено)</span>' 
+                : '';
+            const dueDateLabel = formatDueDateLabel(task.dueDate);
+            return `
+                <div class="task-due ${cls}">
+                    <span>📅</span>
+                    ${dueDateLabel}
+                    ${overdueLabel}
+                </div>
+            `
+        })()
+        : '';
+
     wrap.innerHTML = `
         <div class="card-body py-2 px-3">
             <div class="d-flex justify-content-between align-items-start gap-2">
                 <h6 class="card-title editable mb-1 flex-grow-1" data-task-id="${task.id}">${task.title}</h6>
                 <button type="button" class="btn btn-outline-danger btn-sm delete-btn" data-task-id="${task.id}" title="Удалить">×</button>
             </div>
+            ${dueLine}
             <span class="badge ${meta.badge}">${meta.label}</span>
         </div>
     `;
@@ -205,6 +250,7 @@ let tasks = loadTasks();
 const titleInp = document.getElementById('titleInput');
 const addBtn = document.getElementById('addTask');
 const boardEl = document.getElementById('board');
+const dueDateInp = document.getElementById('dueDateInput');
 
 let draggedTaskId = null;
 
@@ -226,11 +272,15 @@ addBtn.addEventListener('click', () => {
         return;
     }
 
-    tasks.push({ id: newId(), title, status: 'todo' });
+    const due = dueDateInp.value;
+    
+
+    tasks.push({ id: newId(), title, status: 'todo',  dueDate: due });
 
     renderTasks();
 
     titleInp.value = "";
+    dueDateInp.value = "";
 });
 
 titleInp.addEventListener('keydown', (event) => {
@@ -238,6 +288,13 @@ titleInp.addEventListener('keydown', (event) => {
         addBtn.click();
     }
 })
+
+document.getElementById('clearBoard').addEventListener('click', ()=>{
+    if(tasks.length === 0) return;
+    if(!confirm('Удалить все задачи с доски?')) return;
+    tasks = [];
+    renderTasks();
+});
 
 
 
