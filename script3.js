@@ -21,15 +21,15 @@ function loadTasks() {
 
         if (!raw) {
             return [
-                { id: newId(), title: 'Learn JS', status: 'todo', dueDate: null },
-                { id: newId(), title: 'Do Homework', status: 'done', dueDate: null },
-                { id: newId(), title: 'Task3', status: 'done', dueDate: null },
-                { id: newId(), title: 'Task4', status: 'progress', dueDate: null },
-                { id: newId(), title: 'Task5', status: 'progress', dueDate: null },
-                { id: newId(), title: 'Task6', status: 'todo', dueDate: null },
-                { id: newId(), title: 'Task7', status: 'done', dueDate: null },
-                { id: newId(), title: 'Task8', status: 'todo', dueDate: null },
-                { id: newId(), title: 'Task9', status: 'done', dueDate: null }
+                { id: newId(), title: 'Learn JS', status: 'todo', dueDate: null, pinned: true },
+                { id: newId(), title: 'Do Homework', status: 'done', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task3', status: 'done', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task4', status: 'progress', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task5', status: 'progress', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task6', status: 'todo', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task7', status: 'done', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task8', status: 'todo', dueDate: null, pinned: false },
+                { id: newId(), title: 'Task9', status: 'done', dueDate: null, pinned: false }
             ]
         }
 
@@ -66,8 +66,30 @@ function tasksInStatus(status) {
     return tasks.filter((t) => t.status === status);
 }
 
+function normalizeOrderForPins(){
+    const orderMap = new Map(); //id задачи - ее индекс
+    tasks.forEach((t,i) => orderMap.set(t.id, i)); //сохраняем исходній порядок
+
+    //Новій масив сюда будем собирать отсортированніе задачи
+    const next = [];
+
+    //Проходи по статусам (todo, in-progress ,done)
+    for(const s of STATUS_ORDER){
+        //берем задачи єтого статуса
+        const group = tasks.filter((t) => t.status === s);
+
+        //делим на закреп ине закреп
+        const pin = group.filter((t) => t.pinned);
+        const unpin = group.filter((t) => !t.pinned);
+
+        pin.sort((a,b) => orderMap.get(a.id) - orderMap.get(b.id));
+        unpin.sort((a,b) => orderMap.get(a.id) - orderMap.get(b.id));
+        next.push(...pin, ...unpin);
+    }
+}
 
 function renderTasks() {
+    normalizeOrderForPins();
     boardEl.innerHTML = '';
 
     STATUS_ORDER.forEach((status) => {
