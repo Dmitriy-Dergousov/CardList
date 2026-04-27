@@ -17,3 +17,8 @@
 .task-card.dragging{
     opacity: 0.55;
 }
+
+.pin-btn{
+    line-height: 1;
+    text-decoration: none;
+}

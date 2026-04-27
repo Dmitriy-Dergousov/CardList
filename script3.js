@@ -86,6 +86,12 @@ function normalizeOrderForPins(){
         unpin.sort((a,b) => orderMap.get(a.id) - orderMap.get(b.id));
         next.push(...pin, ...unpin);
     }
+
+    const seen = new Set(next.map((t)=> t.id));
+    for (const t of tasks){
+        if(!seen.has(t.id))next.push(t);
+    }
+    tasks = next;
 }
 
 function renderTasks() {
@@ -181,9 +187,14 @@ function createTaskCard(task) {
         })()
         : '';
 
+    const pinTitle = task.pinned ? 'Открепить' : 'Закрепить';
+    const pinIcon = task.pinned ? '★' : '☆';   
+    const pinBtnClass = task.pinned ? 'text-warning' : 'text-secondary';    
+
     wrap.innerHTML = `
         <div class="card-body py-2 px-3">
             <div class="d-flex justify-content-between align-items-start gap-2">
+                <button type="button" class="btn btn-link pin-btn ${pinBtnClass} p-0 me-1 flex-shrink-0" data-task-id="${task.id}" title="${pinTitle}">${pinIcon}</button>
                 <h6 class="card-title editable mb-1 flex-grow-1" data-task-id="${task.id}">${task.title}</h6>
                 <button type="button" class="btn btn-outline-danger btn-sm delete-btn" data-task-id="${task.id}" title="Удалить">×</button>
             </div>
@@ -243,6 +254,47 @@ function addCardEvents(){
             const taskId = btn.dataset.taskId;
             tasks = tasks.filter((t) => t.id !== taskId);
             renderTasks();
+        })
+    });
+
+    document.querySelectorAll('.pin-btn').forEach((btn) => {
+        btn.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            e.preventDefault();
+            const id = btn.dataset.taskId;
+            const task = tasks.find((t) => t.id === id);
+            if(!task) return;
+            task.pinned = !task.pinned;
+            renderTasks();
+        })
+    });
+
+    document.querySelectorAll('.editable').forEach((el)=>{
+        el.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            const taskId = tasks.find((t)=> t.id === taskId);
+            if(!task) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'w-100 d-flex flex-column gap-2';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = task.title;
+
+            const dateRow = document.createElement('div');
+            dateRow.className = 'd-flex flex-wrap align-items-center gap-2';
+
+            const dateLabel = document.createElement('label');
+            dateLabel.className = 'form-label small mb-0 text-muted';
+            dateLabel.textContent = 'Срок: ';
+            dateLabel.setAttribute('for', 'edit-due-' + taskId);
+
+
+            const dateInput = document.createElement('input');
+            dateInput.id = 'edit-due-' + taskId;
+            dateInput.type = 'date';
+            dateInput.className = 'form-control form-control-sm'; 
         })
     });
 }
